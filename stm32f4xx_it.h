@@ -1,12 +1,13 @@
 /**
 *****************************************************************************
 **
-**  File        : stm32f4xx_it.h
+**  @file		stm32f4xx_it.h
 **
-**  Abstract    : Main Interrupt Service Routines.
-**                This file provides template for all exceptions handler and
-**                peripherals interrupt service routine.
+**  @brief		Main Interrupt Service Routines.
+**				This file provides template for all exceptions handler and
+**				peripherals interrupt service routine.
 **
+** @attention
 **  Environment : Atollic TrueSTUDIO(R)
 **                STMicroelectronics STM32F4xx Standard Peripherals Library
 **
@@ -14,6 +15,7 @@
 **                of any kind.
 **
 **  (c)Copyright Atollic AB.
+**
 **  You may use this file as-is or modify it according to the needs of your
 **  project. This file may only be built (assembled or compiled and linked)
 **  using the Atollic TrueSTUDIO(R) product. The use of this file together

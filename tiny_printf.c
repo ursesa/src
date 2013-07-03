@@ -1,10 +1,10 @@
 /**
 *****************************************************************************
 **
-**  File        : tiny_printf.c
+**  @file		tiny_printf.c
 **
-**  Abstract    : Atollic TrueSTUDIO Minimal iprintf/siprintf/fiprintf
-**                and puts/fputs.
+**  @brief		Atollic TrueSTUDIO Minimal iprintf/siprintf/fiprintf
+**				and puts/fputs.
 **                Provides aliased declarations for printf/sprintf/fprintf
 **                pointing to *iprintf variants.
 **
@@ -27,12 +27,14 @@
 **                Note:
 **                Character padding is not supported
 **
-**  Environment : Atollic TrueSTUDIO
+** @attention  
+**
+** Environment : Atollic TrueSTUDIO
 **
 **  Distribution: The file is distributed “as is,” without any warranty
 **                of any kind.
 **
-**  (c)Copyright Atollic AB.
+**  (c) Copyright Atollic AB.
 **  You may use this file as-is or modify it according to the needs of your
 **  project. This file may only be built (assembled or compiled and linked)
 **  using the Atollic TrueSTUDIO(R) product. The use of this file together
@@ -63,8 +65,8 @@ int ts_formatlength(const char *fmt, va_list va);
 
 /**
 **---------------------------------------------------------------------------
-**  Abstract: Convert integer to ascii
-**  Returns:  void
+**  @brief Convert integer to ascii
+**  @retval  void
 **---------------------------------------------------------------------------
 */
 void ts_itoa(char **buf, unsigned int d, int base)
@@ -87,8 +89,8 @@ void ts_itoa(char **buf, unsigned int d, int base)
 
 /**
 **---------------------------------------------------------------------------
-**  Abstract: Writes arguments va to buffer buf according to format fmt
-**  Returns:  Length of string
+**  @brief Writes arguments va to buffer buf according to format fmt
+**  @retval  Length of string
 **---------------------------------------------------------------------------
 */
 int ts_formatstring(char *buf, const char *fmt, va_list va)
@@ -152,9 +154,9 @@ int ts_formatstring(char *buf, const char *fmt, va_list va)
 
 /**
 **---------------------------------------------------------------------------
-**  Abstract: Calculate maximum length of the resulting string from the
+**  @brief Calculate maximum length of the resulting string from the
 **            format string and va_list va
-**  Returns:  Maximum length
+**  @retval  Maximum length
 **---------------------------------------------------------------------------
 */
 int ts_formatlength(const char *fmt, va_list va)
@@ -207,9 +209,9 @@ int ts_formatlength(const char *fmt, va_list va)
 
 /**
 **===========================================================================
-**  Abstract: Loads data from the given locations and writes them to the
+**  @brief Loads data from the given locations and writes them to the
 **            given character string according to the format parameter.
-**  Returns:  Number of bytes written
+**  @retval  Number of bytes written
 **===========================================================================
 */
 int siprintf(char *buf, const char *fmt, ...)
@@ -224,9 +226,9 @@ int siprintf(char *buf, const char *fmt, ...)
 
 /**
 **===========================================================================
-**  Abstract: Loads data from the given locations and writes them to the
+**  @brief Loads data from the given locations and writes them to the
 **            given file stream according to the format parameter.
-**  Returns:  Number of bytes written
+**  @retval  Number of bytes written
 **===========================================================================
 */
 int fiprintf(FILE * stream, const char *fmt, ...)
@@ -248,9 +250,9 @@ int fiprintf(FILE * stream, const char *fmt, ...)
 
 /**
 **===========================================================================
-**  Abstract: Loads data from the given locations and writes them to the
+**  @brief Loads data from the given locations and writes them to the
 **            standard output according to the format parameter.
-**  Returns:  Number of bytes written
+**  @retval  Number of bytes written
 **
 **===========================================================================
 */
@@ -273,9 +275,9 @@ int iprintf(const char *fmt, ...)
 
 /**
 **===========================================================================
-**  Abstract: fputs writes the string at s (but without the trailing null) to
+**  @brief fputs writes the string at s (but without the trailing null) to
 **  the file or stream identified by fp.
-**  Returns:  If successful, the result is 0; otherwise, the result is EOF.
+**  @retval  If successful, the result is 0; otherwise, the result is EOF.
 **
 **===========================================================================
 */
@@ -302,9 +304,9 @@ int fputs(const char *s, FILE *fp)
 
 /**
 **===========================================================================
-**  Abstract: puts writes the string at s (followed by a newline, instead of
+**  @brief puts writes the string at s (followed by a newline, instead of
 **  the trailing null) to the standard output stream.
-**  Returns:  If successful, the result is a nonnegative integer; otherwise,
+**  @retval  If successful, the result is a nonnegative integer; otherwise,
 **  the result is EOF.
 **
 **===========================================================================

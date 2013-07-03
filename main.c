@@ -1,19 +1,20 @@
 /**
 *****************************************************************************
 **
-**  File        : main.c
+**  \file		main.c
 **
-**  Abstract    : main function.
+**  \brief		main function
 **
-**  Functions   : main
+**  \attention
 **
 **  Environment : Atollic TrueSTUDIO(R)
 **                STMicroelectronics STM32F4xx Standard Peripherals Library
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed 'as is', without any warranty
 **                of any kind.
 **
-**  (c)Copyright Atollic AB.
+**  (c) Copyright Atollic AB.
+**
 **  You may use this file as-is or modify it according to the needs of your
 **  project. This file may only be built (assembled or compiled and linked)
 **  using the Atollic TrueSTUDIO(R) product. The use of this file together
@@ -54,7 +55,9 @@ int main(void)
 
   /* TODO - Add your application code here */
 
-  /* Initialize LEDs */
+  /* Initialize User_Button and LEDs on STM32F4-Discovery */
+  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+
   STM_EVAL_LEDInit(LED3);
   STM_EVAL_LEDInit(LED4);
   STM_EVAL_LEDInit(LED5);
@@ -69,25 +72,13 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
+	  if (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
+	  {
+		  STM_EVAL_LEDToggle(LED3);
+		  STM_EVAL_LEDToggle(LED4);
+		  STM_EVAL_LEDToggle(LED5);
+		  STM_EVAL_LEDToggle(LED6);
+	  }
 	i++;
   }
-}
-
-
-/*
- * Callback used by stm32f4_discovery_audio_codec.c.
- * Refer to stm32f4_discovery_audio_codec.h for more info.
- */
-void EVAL_AUDIO_TransferComplete_CallBack(uint32_t pBuffer, uint32_t Size){
-  /* TODO, implement your code here */
-  return;
-}
-
-/*
- * Callback used by stm324xg_eval_audio_codec.c.
- * Refer to stm324xg_eval_audio_codec.h for more info.
- */
-uint16_t EVAL_AUDIO_GetSampleCallBack(void){
-  /* TODO, implement your code here */
-  return -1;
 }
