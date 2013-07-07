@@ -26,10 +26,25 @@
 /* Includes */
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
+#include "stm32f4xx_it.h"
+#include "LogA_DigOUT.h"
+#include "LogA_TimingLib.h"
+#include <stdio.h>
 
 /* Private macro */
-/* Private variables */
+
+/* Private variables ---------------------------------------------------------*/
+GPIO_InitTypeDef GPIO_InitStructure;
+
+/* Unused private variables --------------------------------------------------*/
+//uint16_t PrescalerValue = 0;
+//__IO uint8_t DemoEnterCondition = 0x00;
+//__IO uint8_t UserButtonPressed = 0x00;
+//__IO int8_t X_Offset, Y_Offset, Z_Offset  = 0x00;
+//uint8_t Buffer[6];
+
 /* Private function prototypes */
+
 /* Private functions */
 
 /**
@@ -41,7 +56,9 @@
 */
 int main(void)
 {
-  int i = 0;
+	RCC_ClocksTypeDef RCC_Clocks;
+	int i = 0;
+	uint8_t togglecounter = 0x00;
 
   /**
   *  IMPORTANT NOTE!
@@ -56,29 +73,116 @@ int main(void)
   /* TODO - Add your application code here */
 
   /* Initialize User_Button and LEDs on STM32F4-Discovery */
-  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_GPIO);
 
   STM_EVAL_LEDInit(LED3);
   STM_EVAL_LEDInit(LED4);
   STM_EVAL_LEDInit(LED5);
   STM_EVAL_LEDInit(LED6);
 
-  /* Turn on LEDs */
-  STM_EVAL_LEDOn(LED3);
-  STM_EVAL_LEDOn(LED4);
-  STM_EVAL_LEDOn(LED5);
-  STM_EVAL_LEDOn(LED6);
+  /* Initialize Digital Outputs on STM32F4-Discovery */
+  LogA_DigOUT_Init(OUT1);
+  LogA_DigOUT_Init(OUT2);
+  LogA_DigOUT_Init(OUT3);
+  LogA_DigOUT_Init(OUT4);
+  LogA_DigOUT_Init(OUT5);
+  LogA_DigOUT_Init(OUT6);
+  LogA_DigOUT_Init(OUT7);
+  LogA_DigOUT_Init(OUT8);
+
+  /* SysTick end of count event each 1ms */
+  RCC_GetClocksFreq(&RCC_Clocks);
+  SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+
+  if (SysTick_Config(SystemCoreClock / 1000))
+  {
+    /* Capture error */
+    while (1);
+  }
+
+ /* Turn on or off LEDs available on STM32F4-Discovery ---------------------------*/
+  STM_EVAL_LEDOn(LED4);		// green, left
+  STM_EVAL_LEDOff(LED3);	// orange, up
+  STM_EVAL_LEDOn(LED5);		// red, right
+  STM_EVAL_LEDOff(LED6);	// blue, down
+
+  /* Turn on or off some OUTs */
+  LogA_DigOUT_On(OUT1);
+  LogA_DigOUT_Off(OUT2);
+  LogA_DigOUT_On(OUT3);
+  LogA_DigOUT_Off(OUT4);
+  LogA_DigOUT_On(OUT5);
+  LogA_DigOUT_Off(OUT6);
+  LogA_DigOUT_On(OUT7);
+  LogA_DigOUT_Off(OUT8);
 
   /* Infinite loop */
   while (1)
   {
-	  if (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-	  {
-		  STM_EVAL_LEDToggle(LED3);
+
+	  	  /* Toogle some LEDs and OUTs */
+	  	  /* Toggle LED4 green */
 		  STM_EVAL_LEDToggle(LED4);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED3 orange */
+		  STM_EVAL_LEDToggle(LED3);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED5 red */
 		  STM_EVAL_LEDToggle(LED5);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED6 blue */
 		  STM_EVAL_LEDToggle(LED6);
-	  }
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  togglecounter ++;
+
+		  if (togglecounter == 0x10)
+		  {
+			togglecounter = 0x00;
+			while (togglecounter < 0x10)
+			{
+			  STM_EVAL_LEDToggle(LED4);
+			  STM_EVAL_LEDToggle(LED3);
+			  STM_EVAL_LEDToggle(LED5);
+			  STM_EVAL_LEDToggle(LED6);
+			  LogA_DigOUT_Toggle(OUT5);
+			  DelayInMs(1000);
+			  //Delay(0x0100000);
+			  togglecounter ++;
+			}
+		   togglecounter = 0x00;
+		  }
+
 	i++;
   }
 }
+
+
+/* Private functions ---------------------------------------------------------*/
+
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/*****END OF FILE****/
+
+
+
+// * 	  /* Waiting User Button is pressed */
+//	    //while (UserButtonPressed == 0x00)
+//	    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
+//	    {
+//
+//	    }
+// */
+
+
