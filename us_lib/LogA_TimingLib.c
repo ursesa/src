@@ -62,23 +62,11 @@
 //***************************************************************************************
 
 /**
-  * @brief  Delay Function.
-  * @param  nCount: specifies the Delay time length.
-  * @retval None
-  */
-void Delay(__IO uint32_t nCount)
-{
-  while(nCount--)
-  {
-  }
-}
-
-/**
   * @brief  Inserts a delay time.
-  * @param  nTime: specifies the delay time length, in milliseconds.
+  * @param  nTime: specifies the delay time length, based on SysTick settings.
   * @retval None
   */
-void DelayInMs(__IO uint32_t nTime)
+void DelayBasedOnSysTick(__IO uint32_t nTime)
 {
   TimingDelay = nTime;
 
@@ -97,6 +85,58 @@ void TimingDelay_Decrement(void)
     TimingDelay--;
   }
 }
+
+/***********
+  THE FOLLOWING TIMERS ARE CONFIGURED USING THE me_lib LIBRARY
+  ***********/
+
+/**
+  * @brief  Configure timer 2.
+  * @param  None
+  * @retval None
+  */
+void Timer2Config(void)
+{
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+
+    TIM_TimeBaseStructure.TIM_Period = 0x4AF;
+    TIM_TimeBaseStructure.TIM_Prescaler = ((SystemCoreClock/1680) - 1);
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0x0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+
+    TIM_OCInitTypeDef  TIM_OCInitStructure;
+
+    TIM_OCStructInit(&TIM_OCInitStructure);
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+    TIM_OCInitStructure.TIM_Pulse = 40961;
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+    TIM_OC1Init(TIM2, &TIM_OCInitStructure);
+
+    /* Clear TIM2 update pending flags */
+    TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+}
+
+
+/**
+  * @brief  Configure timer 2 interrupt handling.
+  * @param  None
+  * @retval None
+  */
+void Timer2InterruptConfig(void)
+{
+	NVIC_InitTypeDef  NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 8;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
+
 
 #ifdef  USE_FULL_ASSERT
 

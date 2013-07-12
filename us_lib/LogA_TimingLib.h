@@ -22,9 +22,11 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void Delay(__IO uint32_t nCount);
-void DelayInMs(__IO uint32_t nTime);
+
+void DelayBasedOnSysTick(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
+void Timer2Config(void);
+void Timer2InterruptConfig(void);
 
 #endif /* LOGA_TIMINGLIB_H_ */
 

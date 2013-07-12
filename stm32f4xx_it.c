@@ -141,7 +141,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	LogA_ToggleBlueLED();
+	GPIO_ToggleBits(LEDBLUE);
 /*  TimingDelay_Decrement(); */
 }
 
