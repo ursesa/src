@@ -1,0 +1,48 @@
+/*
+ * main.h
+ *
+ *  Created on: Jul 8, 2013
+ *      Author: Urban Seger
+ */
+
+#ifndef MAIN_H_
+#define MAIN_H_
+
+
+/* Includes */
+#include "stm32f4xx.h"
+#include "stm32f4_discovery.h"
+#include "stm32f4xx_it.h"
+#include "LogA_DigOUT.h"
+#include "LogA_TimingLib.h"
+//#include <stdio.h>
+
+/* Private macro */
+
+/* Private variables ---------------------------------------------------------*/
+GPIO_InitTypeDef GPIO_InitStructure;
+static __IO uint32_t TimingDelay;
+volatile uint32_t UrbiCoutnTest;
+
+/* Unused private variables --------------------------------------------------*/
+//uint16_t PrescalerValue = 0;
+//__IO uint8_t DemoEnterCondition = 0x00;
+//__IO uint8_t UserButtonPressed = 0x00;
+//__IO int8_t X_Offset, Y_Offset, Z_Offset  = 0x00;
+//uint8_t Buffer[6];
+
+/* Private function prototypes */
+
+/* Private functions ---------------------------------------------------------*/
+
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+
+#endif /* MAIN_H_ */

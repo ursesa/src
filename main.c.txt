@@ -1,0 +1,157 @@
+/**
+*****************************************************************************
+**
+**  \file		main.c
+**
+**  \brief		main function
+**
+**  \attention
+**
+**  Environment : Atollic TrueSTUDIO(R)
+**                STMicroelectronics STM32F4xx Standard Peripherals Library
+**
+**  Distribution: The file is distributed 'as is', without any warranty
+**                of any kind.
+**
+**  (c) Copyright Atollic AB.
+**
+**  You may use this file as-is or modify it according to the needs of your
+**  project. This file may only be built (assembled or compiled and linked)
+**  using the Atollic TrueSTUDIO(R) product. The use of this file together
+**  with other tools than Atollic TrueSTUDIO(R) is not permitted.
+**
+*****************************************************************************
+*/
+
+#include "main.h"
+
+
+/**===========================================================================
+**
+**  Abstract: main program
+**
+**===========================================================================
+*/
+int main(void)
+{
+	int i = 0;
+	uint8_t togglecounter = 0x00;
+//	RCC_ClocksTypeDef RCC_Clocks;
+//
+//	/* SysTick end of count event each 1ms */
+//	RCC_GetClocksFreq(&RCC_Clocks);
+//	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+
+	if (SysTick_Config(SystemCoreClock / 1000))
+	{
+		/* Capture error */
+		while (1);
+	}
+
+  /**
+  *  IMPORTANT NOTE!
+  *  The symbol VECT_TAB_SRAM needs to be defined when building the project
+  *  if code has been located to RAM and interrupts are used. 
+  *  Otherwise the interrupt table located in flash will be used.
+  *  See also the <system_*.c> file and how the SystemInit() function updates 
+  *  SCB->VTOR register.  
+  *  E.g.  SCB->VTOR = 0x20000000;  
+  */
+
+  /* TODO - Add your application code here */
+
+  /* Initialize User_Button and LEDs on STM32F4-Discovery */
+  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_GPIO);
+
+  STM_EVAL_LEDInit(LED3);
+  STM_EVAL_LEDInit(LED4);
+  STM_EVAL_LEDInit(LED5);
+  STM_EVAL_LEDInit(LED6);
+
+  /* Initialize Digital Outputs on STM32F4-Discovery */
+  LogA_DigOUT_Init(OUT1);
+  LogA_DigOUT_Init(OUT2);
+  LogA_DigOUT_Init(OUT3);
+  LogA_DigOUT_Init(OUT4);
+  LogA_DigOUT_Init(OUT5);
+  LogA_DigOUT_Init(OUT6);
+  LogA_DigOUT_Init(OUT7);
+  LogA_DigOUT_Init(OUT8);
+
+ /* Turn on or off LEDs available on STM32F4-Discovery ---------------------------*/
+  STM_EVAL_LEDOn(LED4);		// green, left
+  STM_EVAL_LEDOff(LED3);	// orange, up
+  STM_EVAL_LEDOn(LED5);		// red, right
+  STM_EVAL_LEDOff(LED6);	// blue, down
+
+  /* Turn on or off some OUTs */
+  LogA_DigOUT_On(OUT1);
+  LogA_DigOUT_Off(OUT2);
+  LogA_DigOUT_On(OUT3);
+  LogA_DigOUT_Off(OUT4);
+  LogA_DigOUT_On(OUT5);
+  LogA_DigOUT_Off(OUT6);
+  LogA_DigOUT_On(OUT7);
+  LogA_DigOUT_Off(OUT8);
+
+  /* Infinite loop */
+  while (1)
+  {
+
+	  	  /* Toogle some LEDs and OUTs */
+	  	  /* Toggle LED4 green */
+		  STM_EVAL_LEDToggle(LED4);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED3 orange */
+		  STM_EVAL_LEDToggle(LED3);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED5 red */
+		  STM_EVAL_LEDToggle(LED5);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  /* Toggle LED6 blue */
+		  STM_EVAL_LEDToggle(LED6);
+		  LogA_DigOUT_Toggle(OUT5);
+		  //DelayInMs(100);
+		  togglecounter ++;
+
+		  if (togglecounter == 0x10)
+		  {
+			togglecounter = 0x00;
+			while (togglecounter < 0x10)
+			{
+			  STM_EVAL_LEDToggle(LED4);
+			  STM_EVAL_LEDToggle(LED3);
+			  STM_EVAL_LEDToggle(LED5);
+			  STM_EVAL_LEDToggle(LED6);
+			  LogA_DigOUT_Toggle(OUT5);
+			  DelayInMs(1000);
+			  //Delay(0x0100000);
+			  togglecounter ++;
+			}
+		   togglecounter = 0x00;
+		  }
+
+	i++;
+  }
+}
+
+
+
+
+/*****END OF FILE****/
+
+
+
+// * 	  /* Waiting User Button is pressed */
+//	    //while (UserButtonPressed == 0x00)
+//	    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
+//	    {
+//
+//	    }
+// */
+
+

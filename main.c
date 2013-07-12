@@ -1,188 +1,240 @@
-/**
-*****************************************************************************
-**
-**  \file		main.c
-**
-**  \brief		main function
-**
-**  \attention
-**
-**  Environment : Atollic TrueSTUDIO(R)
-**                STMicroelectronics STM32F4xx Standard Peripherals Library
-**
-**  Distribution: The file is distributed 'as is', without any warranty
-**                of any kind.
-**
-**  (c) Copyright Atollic AB.
-**
-**  You may use this file as-is or modify it according to the needs of your
-**  project. This file may only be built (assembled or compiled and linked)
-**  using the Atollic TrueSTUDIO(R) product. The use of this file together
-**  with other tools than Atollic TrueSTUDIO(R) is not permitted.
-**
-*****************************************************************************
+/*==============================================================================*/
+/** @file       main.c
+    @brief      E-LOAD main File
+    @author     Marc Luethi
+
 */
 
-/* Includes */
-#include "stm32f4xx.h"
-#include "stm32f4_discovery.h"
-#include "stm32f4xx_it.h"
-#include "LogA_DigOUT.h"
-#include "LogA_TimingLib.h"
-#include <stdio.h>
 
-/* Private macro */
+/*==============================================================================*/
+/*                          IMPORT                                              */
+/*==============================================================================*/
+#include "main.h"
 
-/* Private variables ---------------------------------------------------------*/
-GPIO_InitTypeDef GPIO_InitStructure;
+/*==============================================================================*/
+/*                          DEFINITIONS/DECLARATIONS                            */
+/*==============================================================================*/
 
-/* Unused private variables --------------------------------------------------*/
-//uint16_t PrescalerValue = 0;
-//__IO uint8_t DemoEnterCondition = 0x00;
-//__IO uint8_t UserButtonPressed = 0x00;
-//__IO int8_t X_Offset, Y_Offset, Z_Offset  = 0x00;
-//uint8_t Buffer[6];
 
-/* Private function prototypes */
+/*==============================================================================*/
+/*                          STATIC FUNCTION PROTOTYPES                          */
+/*==============================================================================*/
 
-/* Private functions */
 
-/**
-**===========================================================================
-**
-**  Abstract: main program
-**
-**===========================================================================
+/*==============================================================================*/
+/*                          EXTERN VARIABLES                                    */
+/*==============================================================================*/
+
+
+/*==============================================================================*/
+/*                          STATIC  VARIABLES                                   */
+/*==============================================================================*/
+
+
+/*==============================================================================*/
+/** @brief      main
 */
 int main(void)
 {
-	RCC_ClocksTypeDef RCC_Clocks;
-	int i = 0;
-	uint8_t togglecounter = 0x00;
+	/**
+	 *  IMPORTANT NOTE!
+	 *  The symbol VECT_TAB_SRAM needs to be defined when building the project
+	 *  if code has been located to RAM and interrupts are used.
+	 *  Otherwise the interrupt table located in flash will be used.
+	 *  See also the <system_*.c> file and how the SystemInit() function updates
+	 *  SCB->VTOR register.
+	 *  E.g.  SCB->VTOR = 0x20000000;
+	 */
+	NVIC_SetVectorTable(NVIC_VectTab_RAM, 0);
 
-  /**
-  *  IMPORTANT NOTE!
-  *  The symbol VECT_TAB_SRAM needs to be defined when building the project
-  *  if code has been located to RAM and interrupts are used. 
-  *  Otherwise the interrupt table located in flash will be used.
-  *  See also the <system_*.c> file and how the SystemInit() function updates 
-  *  SCB->VTOR register.  
-  *  E.g.  SCB->VTOR = 0x20000000;  
-  */
+    setSysClock();
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    SysTick_Config(SystemCoreClock / 100);
 
-  /* TODO - Add your application code here */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
-  /* Initialize User_Button and LEDs on STM32F4-Discovery */
-  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
-  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_GPIO);
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 
-  STM_EVAL_LEDInit(LED3);
-  STM_EVAL_LEDInit(LED4);
-  STM_EVAL_LEDInit(LED5);
-  STM_EVAL_LEDInit(LED6);
+    TIM_TimeBaseStructure.TIM_Period = 0x4AF;
+    TIM_TimeBaseStructure.TIM_Prescaler = ((SystemCoreClock/1680) - 1);
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0x0;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 
-  /* Initialize Digital Outputs on STM32F4-Discovery */
-  LogA_DigOUT_Init(OUT1);
-  LogA_DigOUT_Init(OUT2);
-  LogA_DigOUT_Init(OUT3);
-  LogA_DigOUT_Init(OUT4);
-  LogA_DigOUT_Init(OUT5);
-  LogA_DigOUT_Init(OUT6);
-  LogA_DigOUT_Init(OUT7);
-  LogA_DigOUT_Init(OUT8);
+    TIM_OCInitTypeDef  TIM_OCInitStructure;
 
-  /* SysTick end of count event each 1ms */
-  RCC_GetClocksFreq(&RCC_Clocks);
-  SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+    TIM_OCStructInit(&TIM_OCInitStructure);
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+    TIM_OCInitStructure.TIM_Pulse = 40961;
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+    TIM_OC1Init(TIM2, &TIM_OCInitStructure);
 
-  if (SysTick_Config(SystemCoreClock / 1000))
-  {
-    /* Capture error */
-    while (1);
-  }
 
- /* Turn on or off LEDs available on STM32F4-Discovery ---------------------------*/
-  STM_EVAL_LEDOn(LED4);		// green, left
-  STM_EVAL_LEDOff(LED3);	// orange, up
-  STM_EVAL_LEDOn(LED5);		// red, right
-  STM_EVAL_LEDOff(LED6);	// blue, down
+    /* Clear TIM2 update pending flags */
+    TIM_ClearFlag(TIM2, TIM_FLAG_Update);
 
-  /* Turn on or off some OUTs */
-  LogA_DigOUT_On(OUT1);
-  LogA_DigOUT_Off(OUT2);
-  LogA_DigOUT_On(OUT3);
-  LogA_DigOUT_Off(OUT4);
-  LogA_DigOUT_On(OUT5);
-  LogA_DigOUT_Off(OUT6);
-  LogA_DigOUT_On(OUT7);
-  LogA_DigOUT_Off(OUT8);
 
-  /* Infinite loop */
-  while (1)
-  {
+    NVIC_InitTypeDef  NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 8;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 
-	  	  /* Toogle some LEDs and OUTs */
-	  	  /* Toggle LED4 green */
-		  STM_EVAL_LEDToggle(LED4);
-		  LogA_DigOUT_Toggle(OUT5);
-		  //DelayInMs(100);
-		  /* Toggle LED3 orange */
-		  STM_EVAL_LEDToggle(LED3);
-		  LogA_DigOUT_Toggle(OUT5);
-		  //DelayInMs(100);
-		  /* Toggle LED5 red */
-		  STM_EVAL_LEDToggle(LED5);
-		  LogA_DigOUT_Toggle(OUT5);
-		  //DelayInMs(100);
-		  /* Toggle LED6 blue */
-		  STM_EVAL_LEDToggle(LED6);
-		  LogA_DigOUT_Toggle(OUT5);
-		  //DelayInMs(100);
-		  togglecounter ++;
+    //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+    TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
 
-		  if (togglecounter == 0x10)
-		  {
-			togglecounter = 0x00;
-			while (togglecounter < 0x10)
+
+    /* TIM2 enable counters */
+    TIM_Cmd(TIM2, ENABLE);
+
+
+    USART3_Init(9600);
+
+    delayMS(200);
+
+    meGPIO_Init(LEDGREEN, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(LEDORANGE, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(LEDRED, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(LEDBLUE, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+
+    meGPIO_Init(DIGOUT_PIN1, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN2, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN3, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN4, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN5, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN6, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN7, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+    meGPIO_Init(DIGOUT_PIN8, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+
+    while(1)
+    {
+    	delayMS(200);
+
+    	// 1 1 1 1  1 1 . .  . . . .  . . . .
+    	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
+    	// - - - -  - - - -  - - - -  - - - -
+    	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
+    	// E        B        6        0
+    	GPIO_Write(GPIOC, 0xEB60);
+
+    	uint16_t TestVal = 0;
+    	TestVal =  LogA_PortBits_Compacter(0xA240, 0xEB60);
+
+    	uint16_t TestWal = 0;
+    	TestWal =  LogA_PortBits_Kompakter(0xA240, 0xEB60);
+
+
+    	USART3_PutS("Hallo Urban! \r\n Und mein Akku war gerade leer!!! \r\n");
+    	//GPIO_ToggleBits(LEDORANGE);
+
+    	delayMS(200);
+    	GPIO_Write(GPIOC, 0x0000);
+
+    }
+}
+
+uint16_t LogA_PortBits_Compacter(uint16_t ExpandVal, uint16_t Bitmask)
+{
+	uint16_t CompactVal = 0;
+	uint8_t i;
+	uint8_t zeroes = 0;
+	
+	// 1 1 1 1  1 1 . .  . . . .  . . . .
+	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
+	// - - - -  - - - -  - - - -  - - - -
+	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
+	// E        B        6        0
+	for (i=0; i<16; i++)
+	{
+		if (Bitmask & 0x0001)
+		{
+			CompactVal >>= 1;
+			if (ExpandVal & 0x0001)
 			{
-			  STM_EVAL_LEDToggle(LED4);
-			  STM_EVAL_LEDToggle(LED3);
-			  STM_EVAL_LEDToggle(LED5);
-			  STM_EVAL_LEDToggle(LED6);
-			  LogA_DigOUT_Toggle(OUT5);
-			  DelayInMs(1000);
-			  //Delay(0x0100000);
-			  togglecounter ++;
+				CompactVal |= 0x8000;
 			}
-		   togglecounter = 0x00;
-		  }
+		}
+		else
+		{
+			zeroes++;
+		}
+		ExpandVal >>= 1;
+		Bitmask >>= 1;
+	}
+	CompactVal >>= zeroes;
+	return(CompactVal);
+}
 
-	i++;
-  }
+uint16_t LogA_PortBits_Kompakter(uint16_t ExpandVal, uint16_t Bitmask)
+{
+	uint16_t CompactVal = 0;
+	uint8_t pos = 0;
+
+	// 1 1 1 1  1 1 . .  . . . .  . . . .
+	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
+	// - - - -  - - - -  - - - -  - - - -
+	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
+	// E        B        6        0
+	for (uint8_t i=0; i<16; i++)
+	{
+		if (Bitmask & 0x01<<i)
+		{
+			if (ExpandVal & 0x01<<i)
+			{
+				CompactVal |= 0x01<<pos;
+			}
+		pos++;
+		}
+	}
+	return CompactVal;
 }
 
 
-/* Private functions ---------------------------------------------------------*/
+void LogA_ToggleBlueLED(void)
+{
+	GPIO_ToggleBits(LEDBLUE);
+}
 
 
-/**
-  * @}
-  */
+void TIM2_IRQHandler(void)
+{
+  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+     GPIO_ToggleBits(LEDORANGE);
 
-/**
-  * @}
-  */
+     /* LED1 toggling with frequency = 73.24 Hz */
+     /*STM_EVAL_LEDToggle(LED1);
+         capture = TIM_GetCapture1(TIM2);
+     TIM_SetCompare1(TIM2, capture + CCR1_Val);*/
+   }
+   /*else if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
 
-/*****END OF FILE****/
+     // LED2 toggling with frequency = 109.8 Hz
+     STM_EVAL_LEDToggle(LED2);
+     capture = TIM_GetCapture2(TIM3);
+     TIM_SetCompare2(TIM3, capture + CCR2_Val);
+   }
+   else if (TIM_GetITStatus(TIM3, TIM_IT_CC3) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC3);
 
+     // LED3 toggling with frequency = 219.7 Hz
+     STM_EVAL_LEDToggle(LED3);
+     capture = TIM_GetCapture3(TIM3);
+     TIM_SetCompare3(TIM3, capture + CCR3_Val);
+   }
+   else
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC4);
 
-
-// * 	  /* Waiting User Button is pressed */
-//	    //while (UserButtonPressed == 0x00)
-//	    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-//	    {
-//
-//	    }
-// */
-
-
+     // LED4 toggling with frequency = 439.4 Hz
+     STM_EVAL_LEDToggle(LED4);
+     capture = TIM_GetCapture4(TIM3);
+     TIM_SetCompare4(TIM3, capture + CCR4_Val);
+   }*/
+ }

@@ -10,9 +10,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4_discovery.h"
+#include "main.h"
 
 /* Variables -----------------------------------------------------------------*/
-static __IO uint32_t TimingDelay;
 
 /** @addtogroup LogA_Modules
   * @{
