@@ -22,6 +22,7 @@
 
 #include "us_lib/LogA_PortsLib.h"
 #include "us_lib/LogA_TimingLib.h"
+#include "us_lib/LogA_LCD.h"
 
 
 /* Private macro / DEFINITIONS/DECLARATIONS*/
@@ -35,7 +36,7 @@
 /* Private variables ---------------------------------------------------------*/
 GPIO_InitTypeDef GPIO_InitStructure;
 static __IO uint32_t TimingDelay;
-volatile uint32_t UrbiCoutnTest;
+//volatile uint32_t UrbiCountTest;
 
 
 /* Unused private variables --------------------------------------------------*/
