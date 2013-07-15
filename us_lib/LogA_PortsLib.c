@@ -69,6 +69,34 @@ uint16_t LogA_PortBits_Compactor(uint16_t ExpandVal, uint16_t Bitmask)
 /**
   * @}
   */ 
+uint16_t LogA_PortBits_Expander(uint16_t CompactVal, uint16_t Bitmask)
+{
+	uint16_t ExpandVal = 0;
+	uint8_t pos = 0;
+
+	// 1 1 1 1  1 1 . .  . . . .  . . . .
+	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
+	// - - - -  - - - -  - - - -  - - - -
+	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
+	// E        B        6        0
+	for (uint8_t i=0; i<16; i++)
+	{
+		if (Bitmask & 0x01<<i)
+		{
+			if (CompactVal & 0x01<<pos)
+			{
+				ExpandVal |= 0x01<<i;
+			}
+		pos++;
+		}
+	}
+	return ExpandVal;
+}
+
+
+/**
+  * @}
+  */
 
 /**
   * @}

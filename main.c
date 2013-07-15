@@ -83,6 +83,9 @@ int main(void)
     	delayMS(200);
     	GPIO_Write(GPIOC, 0x0000);
 
+    	uint16_t VestTal = 0;
+    	VestTal = LogA_PortBits_Expander(0x00AA, 0xEB60);
+
 
     }
 }
