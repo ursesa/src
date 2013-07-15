@@ -48,7 +48,7 @@
 
 // Data bus is connected to PE3 .. PE10
 #define DATA_BUS_PORT       GPIOE
-#define DATA_BUS_BIT_OFFSET 3
+//#define DATA_BUS_BIT_OFFSET 3
 
 #define LCD_RW GPIOE, GPIO_Pin_11
 #define LCD_RS GPIOE, GPIO_Pin_12
@@ -62,7 +62,7 @@
 
 static void PrepareControlBusForInstructionWrite(void);
 static void PrepareControlBusForDataWrite(void);
-//todo static void PrepareControlBusForBusyFlagRead(void);
+static void PrepareControlBusForBusyFlagRead(void); //todo
 static void ExecuteDataBusOperation(void);
 static void ResetControlBus(void);
 
@@ -72,7 +72,7 @@ static uint8_t ReadDataBus(void);
 
 static void WriteInstruction(uint8_t instruction);
 static void WriteData(uint8_t data);
-//todo static uint8_t ReadData(void);
+//static uint8_t ReadData(void); //todo
 static bool ReadBusyFlag(void);
 
 static void SetFunction(void);
@@ -108,12 +108,18 @@ void LCD_Initialize(void)
 
 	delayMS(40); // ms
 	SetFunction();
+
 	delayUS(37); // us
-	SetFunction();
+
+	LCD_Off();
+
+	LCD_Clear();
+
+	LCD_SetEntryMode(LCD_EntryMode_IncrementShiftRight);
+
+	ReturnHome();
 
 	LCD_On();
-	LCD_Clear();
-	LCD_SetEntryMode(LCD_EntryMode_IncrementShiftRight);
 }
 
 
@@ -264,13 +270,17 @@ static void SetDataBusAsOutput(void)
 
 static void WriteDataBus(uint8_t byte)
 {
-	GPIO_Write(DATA_BUS_PORT, byte);
+	uint16_t twobytes = 0x0000;
+	twobytes = LogA_PortBits_Expander((uint16_t)byte, 0x07F8);
+	GPIO_Write(DATA_BUS_PORT, twobytes);
 }
 
 static uint8_t ReadDataBus(void)
 {
 	uint8_t byte = 0x00;
-	byte = (uint8_t) GPIO_ReadInputData(DATA_BUS_PORT);
+	uint16_t twobytes = 0x0000;
+	twobytes = GPIO_ReadInputData(DATA_BUS_PORT);
+	byte = (uint8_t) LogA_PortBits_Compactor(twobytes, 0x07F8);
 	return (byte);
 }
 
@@ -310,7 +320,9 @@ static bool ReadBusyFlag(void)
 //--------------------------------------------------------------------------------------------------
 static void SetFunction(void)
 {
-	WriteInstruction(0x38); // 0b001D'NFxx => 0b0011'1000 => 0x38
+	//WaitForNotBusyFlag();
+	WriteInstruction(0x3B); // 0b001D'10FF => 0b0011'1011 => 0x3B
+							//FF: 00 Eng/Jap, 01 Eur1, 10 Eng/Russ, 11 Eur2
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -348,7 +360,7 @@ static void MoveCursor(int line, int pos)
 
 	ReturnHome();
 
-	pos += ((line - 1) * 40); // Offset of 40 per line
+	pos += ((line - 1) * 0x40); // Offset of 40 per line
 	for (i = 1; i < pos; i++)
 		MoveCursorRight();
 }

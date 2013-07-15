@@ -62,6 +62,9 @@ int main(void)
     meGPIO_Init(LEDBLUE, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
 
     LogA_DigOUT_Init();
+	LCD_Initialize();
+	delayMS(1);
+
 
     while(1)
     {
@@ -85,6 +88,15 @@ int main(void)
 
     	uint16_t VestTal = 0;
     	VestTal = LogA_PortBits_Expander(0x00AA, 0xEB60);
+
+//    	LCD_Clear();
+//		delayMS(200);
+
+		LCD_WriteString(1, 5, "Halloele");
+		delayMS(200);
+
+    	LCD_WriteString(2, 5, "Weltchen");
+		delayMS(200);
 
 
     }
