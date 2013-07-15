@@ -70,15 +70,10 @@ int main(void)
     {
     	delayMS(200);
 
-    	// 1 1 1 1  1 1 . .  . . . .  . . . .
-    	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
-    	// - - - -  - - - -  - - - -  - - - -
-    	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
-    	// E        B        6        0
-    	GPIO_Write(GPIOC, 0xEB60);
+    	GPIO_Write(GPIOC, PORTBITS_DIGOUT);
 
-    	uint16_t TestVal = 0;
-    	TestVal =  LogA_PortBits_Compactor(0xA240, 0xEB60);
+    	uint16_t TestVal;
+    	TestVal =  LogA_PortBits_Compactor(0xA240, PORTBITS_DIGOUT);
 
     	USART3_PutS("Hallo Urban! \r\n Und mein Akku war gerade leer!!! \r\n");
     	//GPIO_ToggleBits(LEDORANGE);
@@ -86,16 +81,16 @@ int main(void)
     	delayMS(200);
     	GPIO_Write(GPIOC, 0x0000);
 
-    	uint16_t VestTal = 0;
-    	VestTal = LogA_PortBits_Expander(0x00AA, 0xEB60);
+    	uint16_t VestTal;
+    	VestTal = LogA_PortBits_Expander(0x00AA, PORTBITS_DIGOUT);
 
-//    	LCD_Clear();
-//		delayMS(200);
-
-		LCD_WriteString(1, 5, "Halloele");
+    	LCD_Clear();
 		delayMS(200);
 
-    	LCD_WriteString(2, 5, "Weltchen");
+		LCD_WriteString(1, 3, "KILIAN");
+		delayMS(200);
+
+    	LCD_WriteString(2, 4, "SASKIA");
 		delayMS(200);
 
 

@@ -21,20 +21,37 @@
 #include "LogA_PortsLib.h"
 
 /**
-  * @brief  Configures OUT GPIO.
+  * @brief  Configures DigOUT Channels on GPIOC.
   * @param  todo
   * @retval None
   */
 void LogA_DigOUT_Init(void)
 {
-  meGPIO_Init(DIGOUT_PIN1, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN2, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN3, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN4, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN5, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN6, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN7, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-  meGPIO_Init(DIGOUT_PIN8, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN0, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN1, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN2, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN3, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN4, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN5, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN6, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGOUT_CHAN7, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+}
+
+/**
+  * @brief  Configures DigIN Channels on GPIOB.
+  * @param  todo
+  * @retval None
+  */
+void LogA_DigIN_Init(void)
+{
+  meGPIO_Init(DIGIN_CHAN0, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN1, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN2, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN3, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN4, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN5, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN6, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+  meGPIO_Init(DIGIN_CHAN7, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
 }
 
 
@@ -47,11 +64,6 @@ uint16_t LogA_PortBits_Compactor(uint16_t ExpandVal, uint16_t Bitmask)
 	uint16_t CompactVal = 0;
 	uint8_t pos = 0;
 
-	// 1 1 1 1  1 1 . .  . . . .  . . . .
-	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
-	// - - - -  - - - -  - - - -  - - - -
-	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
-	// E        B        6        0
 	for (uint8_t i=0; i<16; i++)
 	{
 		if (Bitmask & 0x01<<i)
@@ -74,11 +86,6 @@ uint16_t LogA_PortBits_Expander(uint16_t CompactVal, uint16_t Bitmask)
 	uint16_t ExpandVal = 0;
 	uint8_t pos = 0;
 
-	// 1 1 1 1  1 1 . .  . . . .  . . . .
-	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
-	// - - - -  - - - -  - - - -  - - - -
-	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
-	// E        B        6        0
 	for (uint8_t i=0; i<16; i++)
 	{
 		if (Bitmask & 0x01<<i)
@@ -115,11 +122,6 @@ uint16_t LogA_PortBits_Compacter(uint16_t ExpandVal, uint16_t Bitmask)
 	uint8_t i;
 	uint8_t zeroes = 0;
 
-	// 1 1 1 1  1 1 . .  . . . .  . . . .
-	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
-	// - - - -  - - - -  - - - -  - - - -
-	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
-	// E        B        6        0
 	for (i=0; i<16; i++)
 	{
 		if (Bitmask & 0x0001)

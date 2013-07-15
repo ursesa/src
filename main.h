@@ -31,6 +31,22 @@
 #define LEDRED			GPIOD, GPIO_Pin_14
 #define LEDBLUE			GPIOD, GPIO_Pin_15
 
+#define PORTBITS_DIGOUT 		0xEB60	// on GPIOC
+#define PORTBITS_DIGIN			0x39B4	// on GPIOB
+#define PORTBITS_DISPLAY_DATA	0x07F8  // on GPIOE
+
+	// 1 1 1 1  1 1 . .  . . . .  . . . .
+	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
+	// = = = =  = = = =  = = = =  = = = =
+	// 1 1 1 0  1 0 1 1  0 1 1 0  0 0 0 0
+	// E        B        6        0       @ DigOUT
+	// - - - -  - - - -  - - - -  - - - -
+	// 0 0 1 1  1 0 0 1  1 0 1 1  0 1 0 0
+	// 3        9        B        4       @ DigIN
+	// - - - -  - - - -  - - - -  - - - -
+	// 0 0 0 0  0 1 1 1  1 1 1 1  1 0 0 0
+	// 0        7        F        8       @ Display Data Bus
+	// - - - -  - - - -  - - - -  - - - -
 
 
 /* Private variables ---------------------------------------------------------*/

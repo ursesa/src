@@ -271,7 +271,7 @@ static void SetDataBusAsOutput(void)
 static void WriteDataBus(uint8_t byte)
 {
 	uint16_t twobytes = 0x0000;
-	twobytes = LogA_PortBits_Expander((uint16_t)byte, 0x07F8);
+	twobytes = LogA_PortBits_Expander((uint16_t)byte, PORTBITS_DISPLAY_DATA);
 	GPIO_Write(DATA_BUS_PORT, twobytes);
 }
 
@@ -280,7 +280,7 @@ static uint8_t ReadDataBus(void)
 	uint8_t byte = 0x00;
 	uint16_t twobytes = 0x0000;
 	twobytes = GPIO_ReadInputData(DATA_BUS_PORT);
-	byte = (uint8_t) LogA_PortBits_Compactor(twobytes, 0x07F8);
+	byte = (uint8_t) LogA_PortBits_Compactor(twobytes, PORTBITS_DISPLAY_DATA);
 	return (byte);
 }
 
@@ -360,7 +360,9 @@ static void MoveCursor(int line, int pos)
 
 	ReturnHome();
 
-	pos += ((line - 1) * 0x40); // Offset of 40 per line
+	pos += ((line - 1) * 0x40); // Offset of 0x40 per line (16 chars)
+								// Line 1: Address 0x00 through 0x0F
+								// Line 2: Address 0x40 through 0x4F
 	for (i = 1; i < pos; i++)
 		MoveCursorRight();
 }
