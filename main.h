@@ -26,14 +26,21 @@
 
 
 /* Private macro / DEFINITIONS/DECLARATIONS*/
-#define LEDGREEN		GPIOD, GPIO_Pin_12
-#define LEDORANGE		GPIOD, GPIO_Pin_13
-#define LEDRED			GPIOD, GPIO_Pin_14
-#define LEDBLUE			GPIOD, GPIO_Pin_15
+
+#define LEDRED		GPIOD, GPIO_Pin_14	// LED5
+#define LEDORANGE	GPIOD, GPIO_Pin_13	// LED3
+#define LEDGREEN	GPIOD, GPIO_Pin_12	// LED4
+#define LEDBLUE		GPIOD, GPIO_Pin_15	// LED6
+
+#define JOYRIGHT	GPIOD, GPIO_Pin_1
+#define JOYUP		GPIOD, GPIO_Pin_2
+#define JOYLEFT		GPIOD, GPIO_Pin_3
+#define JOYDOWN		GPIOD, GPIO_Pin_6
+#define JOYCLICK	GPIOD, GPIO_Pin_0
 
 #define PORTBITS_DIGOUT 		0xEB60	// on GPIOC
 #define PORTBITS_DIGIN			0x39B4	// on GPIOB
-#define PORTBITS_DISPLAY_DATA	0x07F8  // on GPIOE
+#define PORTBITS_DISPLAY_DATA	0x7F80  // on GPIOE
 
 	// 1 1 1 1  1 1 . .  . . . .  . . . .
 	// 5 4 3 2  1 0 9 8  7 6 5 4  3 2 1 0
@@ -44,8 +51,8 @@
 	// 0 0 1 1  1 0 0 1  1 0 1 1  0 1 0 0
 	// 3        9        B        4       @ DigIN
 	// - - - -  - - - -  - - - -  - - - -
-	// 0 0 0 0  0 1 1 1  1 1 1 1  1 0 0 0
-	// 0        7        F        8       @ Display Data Bus
+	// 0 1 1 1  1 1 1 1  1 0 0 0  0 0 0 0
+	// 7        F        8        0       @ Display Data Bus
 	// - - - -  - - - -  - - - -  - - - -
 
 
@@ -66,6 +73,7 @@ static __IO uint32_t TimingDelay;
 
 
 /* Private functions ---------------------------------------------------------*/
+void LoopPatternOnDigOUT(uint16_t TimeBetweenSamplesMS, uint16_t NumberOfSamples);
 
 
 /**

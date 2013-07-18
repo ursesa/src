@@ -62,6 +62,7 @@
   * @{
   */
 void LogA_DigOUT_Init(void);
+void LogA_DigIN_Init(void);
 uint16_t LogA_PortBits_Compactor(uint16_t ExpandVal, uint16_t Bitmask);
 uint16_t LogA_PortBits_Expander(uint16_t CompactVal, uint16_t Bitmask);
 

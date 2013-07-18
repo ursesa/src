@@ -46,14 +46,23 @@
 #define LCD_ENABLE      1
 #define LCD_DISABLE     0
 
-// Data bus is connected to PE3 .. PE10
-#define DATA_BUS_PORT       GPIOE
-//#define DATA_BUS_BIT_OFFSET 3
+// Data bus is connected to PE7 .. PE14
+#define DATA_BUS_PORT	GPIOE
+//#define DATA_BUS_BIT_OFFSET 7
 
-#define LCD_RW GPIOE, GPIO_Pin_11
-#define LCD_RS GPIOE, GPIO_Pin_12
-#define LCD_EN GPIOE, GPIO_Pin_13
+#define LCD_RW GPIOE, GPIO_Pin_3
+#define LCD_RS GPIOE, GPIO_Pin_4
+#define LCD_EN GPIOE, GPIO_Pin_5
 //#define LCD_BL GPIOc, GPIO_Pin_y
+
+#define LCDDAT_CHAN0 GPIOE, GPIO_Pin_7
+#define LCDDAT_CHAN1 GPIOE, GPIO_Pin_8
+#define LCDDAT_CHAN2 GPIOE, GPIO_Pin_9
+#define LCDDAT_CHAN3 GPIOE, GPIO_Pin_10
+#define LCDDAT_CHAN4 GPIOE, GPIO_Pin_11
+#define LCDDAT_CHAN5 GPIOE, GPIO_Pin_12
+#define LCDDAT_CHAN6 GPIOE, GPIO_Pin_13
+#define LCDDAT_CHAN7 GPIOE, GPIO_Pin_14
 
 
 //==================================================================================================
@@ -105,21 +114,25 @@ void LCD_Initialize(void)
 	GPIO_WriteBit(LCD_EN, false); // E
 
 	SetDataBusAsOutput();
-
 	delayMS(40); // ms
-	SetFunction();
 
-	delayUS(37); // us
+	SetFunction();
+//	delayUS(500); // us
 
 	LCD_Off();
+//	delayUS(500); // us
 
 	LCD_Clear();
+//	delayUS(500); // us
 
 	LCD_SetEntryMode(LCD_EntryMode_IncrementShiftRight);
+//	delayUS(500); // us
 
 	ReturnHome();
+//	delayUS(500); // us
 
 	LCD_On();
+//	delayUS(500); // us
 }
 
 
@@ -250,28 +263,28 @@ static void ResetControlBus(void)
 //--------------------------------------------------------------------------------------------------
 static void SetDataBusAsOutput(void)
 {
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_3, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_3, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_4, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_4, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_5, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_5, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_6, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_6, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_7, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_7, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_8, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_8, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_9, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_9, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-	//GPIO_WriteBit(DATA_BUS_PORT, GPIO_Pin_10, false);
-	meGPIO_Init(DATA_BUS_PORT, GPIO_Pin_10, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	//GPIO_WriteBit(LCDDATACHAN0, false);
+	//GPIO_WriteBit(LCDDATACHAN1, false);
+	//GPIO_WriteBit(LCDDATACHAN2, false);
+	//GPIO_WriteBit(LCDDATACHAN3, false);
+	//GPIO_WriteBit(LCDDATACHAN4, false);
+	//GPIO_WriteBit(LCDDATACHAN5, false);
+	//GPIO_WriteBit(LCDDATACHAN6, false);
+	//GPIO_WriteBit(LCDDATACHAN7, false);
+	meGPIO_Init(LCDDAT_CHAN0, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN1, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN2, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN3, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN4, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN5, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN6, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
+	meGPIO_Init(LCDDAT_CHAN7, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
 }
 
 static void WriteDataBus(uint8_t byte)
 {
 	uint16_t twobytes = 0x0000;
-	twobytes = LogA_PortBits_Expander((uint16_t)byte, PORTBITS_DISPLAY_DATA);
+	twobytes = LogA_PortBits_Expander((uint16_t) byte, PORTBITS_DISPLAY_DATA);
 	GPIO_Write(DATA_BUS_PORT, twobytes);
 }
 
