@@ -28,24 +28,13 @@
 /*==============================================================================*/
 /*                          STATIC  VARIABLES                                   */
 /*==============================================================================*/
-struct sBufFiFo {
-  unsigned int in;                                // Next In Index
-  unsigned int out;                               // Next Out Index
-  unsigned char Restart;
-  char buf [BUF_FIFO_SIZE];                           // Buffer
-};
 
-static volatile struct sBufFiFo BufFiFo;
 /*==============================================================================*/
 /** @brief      Initialisation of USART3 Interface for the HMI communication
  *  @details    57600 Baud, RX Interrupt enabled
 */
 void USART3_Init(unsigned int BaudRate)
 {
-    //Init Bufer FIFO
-    BufFiFo.Restart = 1;
-    BufFiFo.in = 0;
-    BufFiFo.out = 0;
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
@@ -88,23 +77,10 @@ void USART3_Init(unsigned int BaudRate)
 */
 void USART3_PutC(char c)
 {
-    if((BufFiFo.in - BufFiFo.out) > BUF_FIFO_SIZE)
-    {
-        //todo Error_Throw(ERROR_USART_TX_FIFO_OVER, 1, __LINE__);
-        return;
-    }
-
-    NVIC_DisableIRQ(USART3_IRQn);
-    BufFiFo.buf [BufFiFo.in & (BUF_FIFO_SIZE - 1)] = c; // Add data to the transmit buffer.
-    BufFiFo.in++;
-
-    if (BufFiFo.Restart)
-    {                               // If transmit interrupt is disabled, enable it
-        BufFiFo.Restart = 0;
-        USART3->CR1 |= USART_FLAG_TXE;                // enable TX interrupt
-    }
-    NVIC_EnableIRQ(USART3_IRQn);
+	USART_SendData(USART3, c);
+	while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET); //: Transmission Complete flag
 }
+
 /*==================================================================================*/
 void USART3_PutS(char *c)
 {
@@ -126,21 +102,5 @@ void USART3_IRQHandler(void)
     {
          //c = USART_ReceiveData(USART3);
          //todo MeComL1_ReceiveFrame(0, c);
-    }
-
-    if(USART_GetITStatus(USART3, USART_IT_TXE) != RESET)
-    {
-        USART_ClearITPendingBit(USART3, USART_IT_TXE);
-        if (BufFiFo.in != BufFiFo.out)
-        {
-            USART3->DR = (BufFiFo.buf [BufFiFo.out & (BUF_FIFO_SIZE-1)] & 0x1FF);
-            BufFiFo.out++;
-            BufFiFo.Restart = 0;
-        }
-        else
-        {
-            BufFiFo.Restart = 1;
-            USART3->CR1 &= ~USART_FLAG_TXE;           // disable TX interrupt if nothing to send
-        }
     }
 }

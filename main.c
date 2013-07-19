@@ -10,7 +10,6 @@
   *
   * Adopted from E-LOAD/main.c
   * by Thomas Braun and Marc Lüthi
-  * &copy; COPYRIGHT 2011 STMicroelectronics
   *
   ******************************************************************************
   */
@@ -19,11 +18,36 @@
 /*==============================================================================*/
 /*                          IMPORT                                              */
 /*==============================================================================*/
-#include "main.h"
 
 
-// Module Constants
+#include "globals.h"
+#include <stm32.h>
+#include "system_stm32f4xx.h"
+
+//todo #include <stdio.h>
+
+#include "me_lib/delay.h"
+#include "me_lib/SysCLK.h"
+#include "me_lib/meGPIO_Init.h"
+#include "me_lib/USART3_Interface.h"
+
+#include "us_lib/LogA_PortsLib.h"
+#include "us_lib/LogA_TimingLib.h"
+#include "us_lib/LogA_Joystick.h"
+#include "us_lib/LogA_LCD.h"
+#include "us_lib/LogA_LEDs.h"
+
+
+/*==============================================================================*/
+/*                             Module Constants                                 */
+/*==============================================================================*/
+
 const uint8_t aSampleData[12] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00, 0xFF, 0x00, 0xFF};
+uint32_t __IO TimingDelay = 100;
+
+
+MenuStatus_TE DeviceOperationMode = MenuStatus_NoPreselectionOrActivity;
+LEDBlinking_TE LEDCurrentlyBlinking = LEDBlinking_None;
 
 
 // Module Functions
@@ -59,80 +83,136 @@ int main(void)
     //TIM_Cmd(TIM2, ENABLE);
     TIM_Cmd(TIM2, DISABLE);
 
-    USART3_Init(9600);
 
-    delayMS(200);
+//    delayMS(200);
 
-    meGPIO_Init(LEDRED, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(LEDORANGE, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(LEDGREEN, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(LEDBLUE, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-
-    meGPIO_Init(JOYRIGHT, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(JOYUP, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(JOYLEFT, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(JOYDOWN, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-    meGPIO_Init(JOYCLICK, GPIO_Mode_IN, GPIO_OType_OD, GPIO_PuPd_NOPULL, GPIO_Speed_100MHz, 0);
-
+    LogA_Joystick_Init();
     LogA_DigOUT_Init();
+    LogA_LEDs_Init();
+    USART3_Init(9600);
 	LCD_Initialize();
 	delayMS(1);
 
-	uint16_t NumberOfSamples = 5;
-	uint16_t TimeBetweenSamplesMS = 300;
-	LoopPatternOnDigOUT(TimeBetweenSamplesMS, NumberOfSamples);
+	uint16_t NumberOfOutputXamples = 5;
+	uint16_t TimeBetweenOutputXamplesMS = 300;
+	LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
 
 
 
     while(1)
     {
+    	LogA_Joystick_Position_TE JoystickPosition = LogA_Joystick_GetPosition();
+    	switch (JoystickPosition)
+    	{
+			case LogA_Joystick_Position_Click	:
+				{
+					switch (DeviceOperationMode)
+					{
+						case MenuStatus_NoPreselectionOrActivity :
+							{
+								LCD_WriteString(1, 0, "Please Select a ");
+								LCD_WriteString(2, 1, "Menu Item First ");
+								delayMS(1500);
+							}
+							break;
+						case MenuStatus_Preselection_Right :
+							{
+								DeviceOperationMode = MenuStatus_Activity_Right;
+								LogA_LEDs_ClearAllFour();
+								LCD_WriteString(1, 0, "Now Outputting  ");
+								LCD_WriteString(2, 1, "Data on DigOUT  ");
+								LEDCurrentlyBlinking = LEDBlinking_Red_Quickly;
+								//todo LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
+								delayMS(1000);
+							}
+							break;
+						case MenuStatus_Preselection_Up :
+							{
+								DeviceOperationMode = MenuStatus_Activity_Up;
+								LogA_LEDs_ClearAllFour();
+								LCD_WriteString(1, 0, "Now Acquiring   ");
+								LCD_WriteString(2, 1, "Data from DigIN ");
+								LEDCurrentlyBlinking = LEDBlinking_Orange_Quickly;
+								//todo StartSamplingOnDigIN(TimeBetweenInputSamplesUS, NumberOfInputSamples);
+								delayMS(1000);
+							}
+							break;
+						case MenuStatus_Preselection_Left :
+							{
+								DeviceOperationMode = MenuStatus_Activity_Left;
+								LogA_LEDs_ClearAllFour();
+								LCD_WriteString(1, 0, " 7 6 5 4 3 2 1 0");
+								LCD_WriteString(2, 1, " x . . x . . . x");
+								LEDCurrentlyBlinking = LEDBlinking_Green_Quickly;
+								//todo ShowLiveStatusOnLCD(................);
+								delayMS(1000);
+							}
+							break;
+						case MenuStatus_Preselection_Down :
+							{
+								DeviceOperationMode = MenuStatus_Activity_Down;
+								LogA_LEDs_ClearAllFour();
+								LCD_WriteString(1, 0, "Now Sending OLS ");
+								LCD_WriteString(2, 1, "Data to Terminal");
+								LEDCurrentlyBlinking = LEDBlinking_Blue_Quickly;
+								//todo SendOLSDataToTerminal(................);
+								delayMS(1000);
+							}
+							break;
+						// Removes warnings if not all cases are handled
+						default:
+							break; // Do nothing
+					}
 
-    	if (GPIO_ReadInputDataBit(JOYRIGHT))
-    	{
-    		GPIO_SetBits(LEDRED);
-    	}
-    	else
-    	{
-    		GPIO_ResetBits(LEDRED);
-    	}
+			    	LCD_Clear();
 
-    	if (GPIO_ReadInputDataBit(JOYUP))
-    	{
-    		GPIO_SetBits(LEDORANGE);
-    	}
-    	else
-    	{
-    		GPIO_ResetBits(LEDORANGE);
-    	}
+				}
+    		    break;
+			case LogA_Joystick_Position_Right	:
+				{
+					DeviceOperationMode = MenuStatus_Preselection_Right;
+					LogA_LEDs_ClearAllFour();
+					GPIO_SetBits(LEDRED);
+					LEDCurrentlyBlinking = LEDBlinking_Red_Slowly;
+					LCD_WriteString(1, 0, "Click to Confirm");
+					LCD_WriteString(2, 1, "Generator       ");
+				}
+				break;
+			case LogA_Joystick_Position_Up :
+				{
+					DeviceOperationMode = MenuStatus_Preselection_Up;
+					LogA_LEDs_ClearAllFour();
+					GPIO_SetBits(LEDORANGE);
+					LEDCurrentlyBlinking = LEDBlinking_Orange_Slowly;
+					LCD_WriteString(1, 0, "Click to Confirm");
+					LCD_WriteString(2, 1, "Logic Logger    ");
+				}
+				break;
+			case LogA_Joystick_Position_Left :
+				{
+					DeviceOperationMode = MenuStatus_Preselection_Left;
+					LogA_LEDs_ClearAllFour();
+					GPIO_SetBits(LEDGREEN);
+					LEDCurrentlyBlinking = LEDBlinking_Green_Slowly;
+					LCD_WriteString(1, 0, "Click to Confirm");
+					LCD_WriteString(2, 1, "Live Tracker    ");
+				}
+				break;
+			case LogA_Joystick_Position_Down :
+				{
+					DeviceOperationMode = MenuStatus_Preselection_Down;
+					LogA_LEDs_ClearAllFour();
+					GPIO_SetBits(LEDBLUE);
+					LEDCurrentlyBlinking = LEDBlinking_Blue_Slowly;
+					LCD_WriteString(1, 0, "Click to Confirm");
+					LCD_WriteString(2, 1, "OLS File Dump   ");
+				}
+				break;
 
-    	if (GPIO_ReadInputDataBit(JOYLEFT))
-    	{
-    		GPIO_SetBits(LEDGREEN);
+			// Covers Joystick_Position_None
+			default:
+				break; // Do nothing
     	}
-    	else
-    	{
-    		GPIO_ResetBits(LEDGREEN);
-    	}
-
-    	if (GPIO_ReadInputDataBit(JOYDOWN))
-    	{
-    		GPIO_SetBits(LEDBLUE);
-    	}
-    	else
-    	{
-    		GPIO_ResetBits(LEDBLUE);
-    	}
-
-    	if (GPIO_ReadInputDataBit(JOYCLICK))
-    	{
-    		GPIO_SetBits(LEDRED);
-    		GPIO_SetBits(LEDORANGE);
-    		GPIO_SetBits(LEDGREEN);
-    		GPIO_SetBits(LEDBLUE);
-    	}
-
-
-//    	delayMS(200);
 
 
     	GPIO_Write(GPIOC, PORTBITS_DIGOUT);
@@ -145,76 +225,48 @@ int main(void)
     	//GPIO_ToggleBits(LEDORANGE);
 
 
-    	LCD_Clear();
-		delayMS(50);
-
-		LCD_WriteString(1, 3, "KILIAN");
-		delayMS(50);
-
-    	LCD_WriteString(2, 4, "SASKIA");
-		delayMS(50);
+//    	LCD_Clear();
+//		delayMS(50);
+//
+//		LCD_WriteString(1, 3, "KILIAN");
+//		delayMS(50);
+//
+//    	LCD_WriteString(2, 4, "SASKIA");
+//		delayMS(50);
 
 
     }
+    return (0);
 }
 
 
 
 
-void LoopPatternOnDigOUT(uint16_t TimeBetweenSamplesMS, uint16_t NumberOfSamples)
+void LoopPatternOnDigOUT(uint16_t TimeBetweenOutputXamplesMS, uint16_t NumberOfOutputXamples)
 {
 	uint16_t j = 0;
 
-	for (uint16_t i=0; i<=NumberOfSamples+1; i++)	// overflow of NumberOfSamples-1 in the case of
-													// NumberOfSamples = 0 deliberate
+	for (uint16_t i=0; i<=NumberOfOutputXamples+1; i++)	// Real output of X-amples will be 2 greater than
+														// NumberOfOutputXamples but it a trick to handle
+														// the value 0
 	{
-		if (!NumberOfSamples)
+		if (!NumberOfOutputXamples)
 		{
 			i=0; // force i to be reset at each iteration and provoke infinite loop
 		}
 		GPIO_Write(GPIOC, LogA_PortBits_Expander(aSampleData[i%12], PORTBITS_DIGOUT));
-		delayMS(TimeBetweenSamplesMS);
+		delayMS(TimeBetweenOutputXamplesMS);
 		j++;
 	}
 }
 
-void TIM2_IRQHandler(void)
+
+void StartSamplingOnDigIN(uint16_t TimeBetweenInputSamplesUS, uint16_t NumberOfInputSamples)
 {
-  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
-   {
-     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
-     GPIO_ToggleBits(LEDORANGE);
+	uint16_t test = TimeBetweenInputSamplesUS;
+	uint16_t tset = NumberOfInputSamples;
+	uint16_t res = 1;
+	res += test-tset;
+}
 
-     /* LED1 toggling with frequency = 73.24 Hz */
-     /*STM_EVAL_LEDToggle(LED1);
-         capture = TIM_GetCapture1(TIM2);
-     TIM_SetCompare1(TIM2, capture + CCR1_Val);*/
-   }
-   /*else if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
-   {
-     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
 
-     // LED2 toggling with frequency = 109.8 Hz
-     STM_EVAL_LEDToggle(LED2);
-     capture = TIM_GetCapture2(TIM3);
-     TIM_SetCompare2(TIM3, capture + CCR2_Val);
-   }
-   else if (TIM_GetITStatus(TIM3, TIM_IT_CC3) != RESET)
-   {
-     TIM_ClearITPendingBit(TIM3, TIM_IT_CC3);
-
-     // LED3 toggling with frequency = 219.7 Hz
-     STM_EVAL_LEDToggle(LED3);
-     capture = TIM_GetCapture3(TIM3);
-     TIM_SetCompare3(TIM3, capture + CCR3_Val);
-   }
-   else
-   {
-     TIM_ClearITPendingBit(TIM3, TIM_IT_CC4);
-
-     // LED4 toggling with frequency = 439.4 Hz
-     STM_EVAL_LEDToggle(LED4);
-     capture = TIM_GetCapture4(TIM3);
-     TIM_SetCompare4(TIM3, capture + CCR4_Val);
-   }*/
- }

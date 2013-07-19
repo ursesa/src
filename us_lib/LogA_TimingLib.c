@@ -86,6 +86,20 @@ void TimingDelay_Decrement(void)
   }
 }
 
+
+void TimingDelay_Reload(void)
+{
+	if (LEDCurrentlyBlinking < 0x0F)
+	{
+		TimingDelay = 50;	// Number of SysClicks between toggles, blinks slowly
+	}
+	else
+	{
+		TimingDelay = 10;	// Blinks quickls
+	}
+}
+
+
 /***********
   THE FOLLOWING TIMERS ARE CONFIGURED USING THE me_lib LIBRARY
   ***********/

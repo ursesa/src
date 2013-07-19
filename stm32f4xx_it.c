@@ -29,7 +29,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-#include "main.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -141,8 +140,15 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	//todo GPIO_ToggleBits(LEDBLUE);
-/*  TimingDelay_Decrement(); */
+	if (!TimingDelay)
+	{
+		TimingDelay_Reload();
+		LogA_ToggleActiveLED();
+	}
+	else
+	{
+		TimingDelay_Decrement();
+	}
 }
 
 /******************************************************************************/
@@ -151,6 +157,55 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f40xx.s/startup_stm32f427x.s).                         */
 /******************************************************************************/
+
+/**
+  * @brief  This function handles TIM2 interrupt request.
+  * @param  None
+  * @retval None
+  */
+/*void TIM2_IRQHandle(void)
+{
+}*/
+void TIM2_IRQHandler(void)
+{
+  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+     GPIO_ToggleBits(LEDORANGE);
+
+     /* LED1 toggling with frequency = 73.24 Hz */
+     /*STM_EVAL_LEDToggle(LED1);
+         capture = TIM_GetCapture1(TIM2);
+     TIM_SetCompare1(TIM2, capture + CCR1_Val);*/
+   }
+   /*else if (TIM_GetITStatus(TIM3, TIM_IT_CC2) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+
+     // LED2 toggling with frequency = 109.8 Hz
+     STM_EVAL_LEDToggle(LED2);
+     capture = TIM_GetCapture2(TIM3);
+     TIM_SetCompare2(TIM3, capture + CCR2_Val);
+   }
+   else if (TIM_GetITStatus(TIM3, TIM_IT_CC3) != RESET)
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC3);
+
+     // LED3 toggling with frequency = 219.7 Hz
+     STM_EVAL_LEDToggle(LED3);
+     capture = TIM_GetCapture3(TIM3);
+     TIM_SetCompare3(TIM3, capture + CCR3_Val);
+   }
+   else
+   {
+     TIM_ClearITPendingBit(TIM3, TIM_IT_CC4);
+
+     // LED4 toggling with frequency = 439.4 Hz
+     STM_EVAL_LEDToggle(LED4);
+     capture = TIM_GetCapture4(TIM3);
+     TIM_SetCompare4(TIM3, capture + CCR4_Val);
+   }*/
+ }
 
 /**
   * @brief  This function handles PPP interrupt request.
