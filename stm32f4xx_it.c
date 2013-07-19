@@ -173,7 +173,13 @@ void TIM2_IRQHandler(void)
   if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
    {
      TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
-     GPIO_ToggleBits(LEDORANGE);
+
+     if (LogArrayIndex < LOGGING_ARRAY_SIZE)
+     {
+    	 aLoggedData[LogArrayIndex] = LogA_PortBits_Compactor(GPIO_ReadInputData(GPIOB), PORTBITS_DIGIN);
+    	 LogArrayIndex++;
+     }
+
 
      /* LED1 toggling with frequency = 73.24 Hz */
      /*STM_EVAL_LEDToggle(LED1);

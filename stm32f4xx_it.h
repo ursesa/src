@@ -34,6 +34,8 @@
 #include <stm32.h>
 #include "globals.h"
 #include "us_lib/LogA_LEDs.h"
+#include "us_lib/LogA_TimingLib.h"
+#include "us_lib/LogA_PortsLib.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

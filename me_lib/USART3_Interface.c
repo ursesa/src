@@ -1,9 +1,8 @@
 /*==============================================================================*/
 /** @file       USART3_Interface.c
-    @brief      Initialization of USART3 Interface for the HMI communication
-    @author     Marc Luethi
+    @brief      Initialization of USART3 Interface for  LogA communication
+    @author     Marc Luethi, Thomas Braun
 
-    TX data is written to a TX FIFO buffer. Data is sent by the TX interrupt.
 */
 
 
@@ -16,7 +15,7 @@
 /*==============================================================================*/
 /*                          DEFINITIONS/DECLARATIONS                            */
 /*==============================================================================*/
-#define BUF_FIFO_SIZE   256  //Must be a power of 2 (16,32,64,128,256,512,...)
+
 /*==============================================================================*/
 /*                          STATIC FUNCTION PROTOTYPES                          */
 /*==============================================================================*/
@@ -30,8 +29,8 @@
 /*==============================================================================*/
 
 /*==============================================================================*/
-/** @brief      Initialisation of USART3 Interface for the HMI communication
- *  @details    57600 Baud, RX Interrupt enabled
+/** @brief      Initialisation of USART3 Interface for LogA communication
+ *  @details    9600 Baud
 */
 void USART3_Init(unsigned int BaudRate)
 {
@@ -46,8 +45,8 @@ void USART3_Init(unsigned int BaudRate)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_8;	//Rx | Tx
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //GPIO_PuPd_NOPULL;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz; //GPIO_Speed_25MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;		//GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//GPIO_Speed_25MHz;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 
@@ -78,7 +77,7 @@ void USART3_Init(unsigned int BaudRate)
 void USART3_PutC(char c)
 {
 	USART_SendData(USART3, c);
-	while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET); //: Transmission Complete flag
+	while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET); // Transmission Complete flag
 }
 
 /*==================================================================================*/

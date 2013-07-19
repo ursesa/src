@@ -16,7 +16,7 @@
 
 
 /*==============================================================================*/
-/*                          IMPORT                                              */
+/*  I N C L U D E S                                                             */
 /*==============================================================================*/
 
 
@@ -24,7 +24,7 @@
 #include <stm32.h>
 #include "system_stm32f4xx.h"
 
-//todo #include <stdio.h>
+#include <stdio.h>
 
 #include "me_lib/delay.h"
 #include "me_lib/SysCLK.h"
@@ -39,13 +39,18 @@
 
 
 /*==============================================================================*/
-/*                             Module Constants                                 */
+/*                             Module Variables                                 */
 /*==============================================================================*/
 
 const uint8_t aSampleData[12] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00, 0xFF, 0x00, 0xFF};
+__IO uint8_t aLoggedData[LOGGING_ARRAY_SIZE];
 __IO uint16_t TimingDelay = 10;
 __IO uint16_t DeadManDelay = DEADMAN_RELOAD;
+__IO uint16_t LogArrayIndex = 0;
 
+uint8_t TempVariable = 0;
+uint8_t aTempArray[LOGGING_ARRAY_SIZE] = {};
+char sTempString[] = " ";
 
 LogA_Joystick_Position_TE JoystickPositionOLD = LogA_Joystick_Position_None;
 MenuStatus_TE DeviceOperationMode = MenuStatus_NoPreselectionOrActivity;
@@ -53,9 +58,10 @@ LEDBlinking_TE LEDCurrentlyBlinking = LEDBlinking_None;
 uint8_t LEDFlasherProRatio = 0;
 
 
-// Module Functions
-
 /*==============================================================================*/
+/*                            Module Functions                                  */
+/*==============================================================================*/
+
 /** @brief      main
 */
 int main(void)
@@ -75,32 +81,23 @@ int main(void)
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
     SysTick_Config(SystemCoreClock / 100);
 
-
     Timer2Config();
     Timer2InterruptConfig();
 
-    //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-    TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
-
-    /* TIM2 enable counters */
-    //TIM_Cmd(TIM2, ENABLE);
-    TIM_Cmd(TIM2, DISABLE);
-
-
-//    delayMS(200);
-
-    LogA_Joystick_Init();
     LogA_DigOUT_Init();
+    LogA_DigIN_Init();
+    LogA_Joystick_Init();
     LogA_LEDs_Init();
     USART3_Init(9600);
 	LCD_Initialize();
 	delayMS(1);
 
-	uint16_t NumberOfOutputXamples = 5;
-	uint16_t TimeBetweenOutputXamplesMS = 300;
+	uint16_t NumberOfOutputXamples = 60;
+	uint16_t TimeBetweenOutputXamplesMS = 200;
 	LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
 
-
+	StartSamplingOnDigIN();		// for debugging and testing purposes start sampling and then activate the pattern
+								// generator using the joystick
 
     while(1)
     {
@@ -140,8 +137,7 @@ int main(void)
 						LCD_WriteString(1, 0, "Now Outputting  ");
 						LCD_WriteString(2, 1, "Data on DigOUT  ");
 						LEDCurrentlyBlinking = LEDBlinking_Red_Quickly;
-						//todo LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
-						delayMS(1000);
+						LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
 					}
 					break;
 					case MenuStatus_Preselection_Up :
@@ -151,7 +147,7 @@ int main(void)
 						LCD_WriteString(1, 0, "Now Acquiring   ");
 						LCD_WriteString(2, 1, "Data from DigIN ");
 						LEDCurrentlyBlinking = LEDBlinking_Orange_Quickly;
-						//todo StartSamplingOnDigIN(TimeBetweenInputSamplesUS, NumberOfInputSamples);
+						// StartSamplingOnDigIN();
 						delayMS(1000);
 					}
 					break;
@@ -173,8 +169,7 @@ int main(void)
 						LCD_WriteString(1, 0, "Now Sending OLS ");
 						LCD_WriteString(2, 1, "Data to Terminal");
 						LEDCurrentlyBlinking = LEDBlinking_Blue_Quickly;
-						//todo SendOLSDataToTerminal(................);
-						delayMS(1000);
+						SendOLSDataToTerminal();
 					}
 					break;
 					// Removes warnings if not all cases are handled
@@ -244,29 +239,12 @@ int main(void)
 				}
 			}
 			break;
+
+			for (uint8_t i = 0; i<LOGGING_ARRAY_SIZE; i++)
+			{
+				aTempArray[i] = aLoggedData[i];
+			}
     	}
-
-
-//    	GPIO_Write(GPIOC, PORTBITS_DIGOUT);
-//    	delayMS(10);
-//    	GPIO_Write(GPIOC, 0x0000);
-//    	delayMS(10);
-
-
-    	USART3_PutS("Hallo Urban! \r\n Und mein Akku war gerade leer!!! \r\n");
-    	//GPIO_ToggleBits(LEDORANGE);
-
-
-//    	LCD_Clear();
-//		delayMS(50);
-//
-//		LCD_WriteString(1, 3, "KILIAN");
-//		delayMS(50);
-//
-//    	LCD_WriteString(2, 4, "SASKIA");
-//		delayMS(50);
-
-
     }
     return (0);
 }
@@ -293,12 +271,42 @@ void LoopPatternOnDigOUT(uint16_t TimeBetweenOutputXamplesMS, uint16_t NumberOfO
 }
 
 
-void StartSamplingOnDigIN(uint16_t TimeBetweenInputSamplesUS, uint16_t NumberOfInputSamples)
+
+// NumberOfInputSamples is defined in the globals.h header:
+// #define LOGGING_ARRAY_SIZE		100		// number of 8-bit samples to be stored in the offline logger array
+// TimeBetweenInputSamples is also deinfined in globals.h:
+// #define LOGGING_SAMPLING_GAP		3000
+void StartSamplingOnDigIN(void)
 {
-	uint16_t test = TimeBetweenInputSamplesUS;
-	uint16_t tset = NumberOfInputSamples;
-	uint16_t res = 1;
-	res += test-tset;
+    //TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+    TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
+
+    /* Enable or disable TIM2 counters */
+    TIM_Cmd(TIM2, ENABLE);
+    //TIM_Cmd(TIM2, DISABLE);
 }
 
 
+void SendOLSDataToTerminal(void)
+{
+	USART3_PutS(";Rate: -1\r\n");
+	USART3_PutS(";Channels: 8\r\n");
+	USART3_PutS(";EnabledChannels: 255\r\n");
+
+	for (uint8_t i = 0; i<LOGGING_ARRAY_SIZE; i++)
+	{
+		TempVariable = aLoggedData[i];				// this is a rather awkward way of doing the parsing
+		sprintf(sTempString, "%X", TempVariable);	// but tinyprintf.c does not provide the same functionality
+		USART3_PutS(sTempString);					// the 'normal' sprintf does
+		USART3_PutS("@");
+		sprintf(sTempString, "%i", i);
+		USART3_PutS(sTempString);
+		USART3_PutS("\r\n");
+	}
+
+
+//  sprintf(sTempString, "Hallo! \r\n Der Wert ist %X. \r\n", aLoggedData[LogArrayIndex]);
+//  sprintf(sTempString, "Hallo! \r\n");
+
+//  USART3_PutS("Halli");
+}

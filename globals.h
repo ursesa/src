@@ -37,7 +37,13 @@
 #define PORTBITS_DIGIN			0x39B4	// on GPIOB
 #define PORTBITS_DISPLAY_DATA	0x7F80  // on GPIOE
 
-#define DEADMAN_RELOAD			500		// delay upon no user action after which menu will go back to start
+#define DEADMAN_RELOAD			250		// delay upon no user action after which menu will go back to start
+
+#define LOGGING_ARRAY_SIZE		200		// number of 8-bit samples to be stored in the offline logger array
+#define LOGGING_TIM_PERIOD		0xFF	// sampling period in us (opposite of sampling frequency)
+										// todo *NOT AT ALL*
+
+										// original TIM_Period value: 0x4AF (1199 in decimal)
 
 
 //==================================================================================================
@@ -88,27 +94,24 @@ LEDBlinking_TE;
 
 extern __IO uint16_t TimingDelay;
 extern __IO uint16_t DeadManDelay;
+extern __IO uint16_t LogArrayIndex;
+extern __IO uint8_t aLoggedData[];
 extern MenuStatus_TE DeviceOperationMode;
 extern LEDBlinking_TE LEDCurrentlyBlinking;
 
 
-
-
-/* Unused private variables --------------------------------------------------*/
+/* Unused global variables --------------------------------------------------*/
 //volatile uint32_t UrbiCountTest;
-//GPIO_InitTypeDef GPIO_InitStructure;
-//uint16_t PrescalerValue = 0;
-//__IO uint8_t DemoEnterCondition = 0x00;
-//__IO uint8_t UserButtonPressed = 0x00;
-//__IO int8_t X_Offset, Y_Offset, Z_Offset  = 0x00;
-//uint8_t Buffer[6];
-
-/* Private function prototypes */
 
 
-/* Private functions ---------------------------------------------------------*/
+
+//==================================================================================================
+// P R I V A T E  F U N C T I O N S (used in main.c)
+//==================================================================================================
+
 extern void LoopPatternOnDigOUT(uint16_t TimeBetweenOutputXamplesMS, uint16_t NumberOfOutputXamples);
-extern void StartSamplingOnDigIN(uint16_t TimeBetweenInputSamplesUS, uint16_t NumberOfInputSamples);
+extern void StartSamplingOnDigIN(void);
+extern void SendOLSDataToTerminal(void);
 
 
 #endif /* GLOBALS_H_ */
