@@ -43,11 +43,14 @@
 /*==============================================================================*/
 
 const uint8_t aSampleData[12] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00, 0xFF, 0x00, 0xFF};
-uint32_t __IO TimingDelay = 100;
+__IO uint16_t TimingDelay = 10;
+__IO uint16_t DeadManDelay = DEADMAN_RELOAD;
 
 
+LogA_Joystick_Position_TE JoystickPositionOLD = LogA_Joystick_Position_None;
 MenuStatus_TE DeviceOperationMode = MenuStatus_NoPreselectionOrActivity;
 LEDBlinking_TE LEDCurrentlyBlinking = LEDBlinking_None;
+uint8_t LEDFlasherProRatio = 0;
 
 
 // Module Functions
@@ -102,123 +105,152 @@ int main(void)
     while(1)
     {
     	LogA_Joystick_Position_TE JoystickPosition = LogA_Joystick_GetPosition();
+
+    	if (JoystickPosition != JoystickPositionOLD)
+    	{
+    		DeadManDelay = DEADMAN_RELOAD;
+    	}
+
+    	JoystickPositionOLD = JoystickPosition;		// Save current joystick position for comparison at next iteration
+
+    	if (DeadManDelay == 0)
+    	{
+    		//JoystickPosition = LogA_Joystick_Position_None;
+    		DeviceOperationMode = MenuStatus_NoPreselectionOrActivity;
+    	}
+
     	switch (JoystickPosition)
     	{
 			case LogA_Joystick_Position_Click	:
+			{
+				switch (DeviceOperationMode)
 				{
-					switch (DeviceOperationMode)
+					case MenuStatus_NoPreselectionOrActivity :
 					{
-						case MenuStatus_NoPreselectionOrActivity :
-							{
-								LCD_WriteString(1, 0, "Please Select a ");
-								LCD_WriteString(2, 1, "Menu Item First ");
-								delayMS(1500);
-							}
-							break;
-						case MenuStatus_Preselection_Right :
-							{
-								DeviceOperationMode = MenuStatus_Activity_Right;
-								LogA_LEDs_ClearAllFour();
-								LCD_WriteString(1, 0, "Now Outputting  ");
-								LCD_WriteString(2, 1, "Data on DigOUT  ");
-								LEDCurrentlyBlinking = LEDBlinking_Red_Quickly;
-								//todo LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
-								delayMS(1000);
-							}
-							break;
-						case MenuStatus_Preselection_Up :
-							{
-								DeviceOperationMode = MenuStatus_Activity_Up;
-								LogA_LEDs_ClearAllFour();
-								LCD_WriteString(1, 0, "Now Acquiring   ");
-								LCD_WriteString(2, 1, "Data from DigIN ");
-								LEDCurrentlyBlinking = LEDBlinking_Orange_Quickly;
-								//todo StartSamplingOnDigIN(TimeBetweenInputSamplesUS, NumberOfInputSamples);
-								delayMS(1000);
-							}
-							break;
-						case MenuStatus_Preselection_Left :
-							{
-								DeviceOperationMode = MenuStatus_Activity_Left;
-								LogA_LEDs_ClearAllFour();
-								LCD_WriteString(1, 0, " 7 6 5 4 3 2 1 0");
-								LCD_WriteString(2, 1, " x . . x . . . x");
-								LEDCurrentlyBlinking = LEDBlinking_Green_Quickly;
-								//todo ShowLiveStatusOnLCD(................);
-								delayMS(1000);
-							}
-							break;
-						case MenuStatus_Preselection_Down :
-							{
-								DeviceOperationMode = MenuStatus_Activity_Down;
-								LogA_LEDs_ClearAllFour();
-								LCD_WriteString(1, 0, "Now Sending OLS ");
-								LCD_WriteString(2, 1, "Data to Terminal");
-								LEDCurrentlyBlinking = LEDBlinking_Blue_Quickly;
-								//todo SendOLSDataToTerminal(................);
-								delayMS(1000);
-							}
-							break;
-						// Removes warnings if not all cases are handled
-						default:
-							break; // Do nothing
+						LCD_WriteString(1, 0, "Please Select a ");
+						LCD_WriteString(2, 1, "Menu Item First ");
+						LEDCurrentlyBlinking = LEDBlinking_ToggleAllFour;
+						delayMS(1500);
 					}
-
-			    	LCD_Clear();
-
+					break;
+					case MenuStatus_Preselection_Right :
+					{
+						DeviceOperationMode = MenuStatus_Activity_Right;
+						LogA_LEDs_ClearAllFour();
+						LCD_WriteString(1, 0, "Now Outputting  ");
+						LCD_WriteString(2, 1, "Data on DigOUT  ");
+						LEDCurrentlyBlinking = LEDBlinking_Red_Quickly;
+						//todo LoopPatternOnDigOUT(TimeBetweenOutputXamplesMS, NumberOfOutputXamples);
+						delayMS(1000);
+					}
+					break;
+					case MenuStatus_Preselection_Up :
+					{
+						DeviceOperationMode = MenuStatus_Activity_Up;
+						LogA_LEDs_ClearAllFour();
+						LCD_WriteString(1, 0, "Now Acquiring   ");
+						LCD_WriteString(2, 1, "Data from DigIN ");
+						LEDCurrentlyBlinking = LEDBlinking_Orange_Quickly;
+						//todo StartSamplingOnDigIN(TimeBetweenInputSamplesUS, NumberOfInputSamples);
+						delayMS(1000);
+					}
+					break;
+					case MenuStatus_Preselection_Left :
+					{
+						DeviceOperationMode = MenuStatus_Activity_Left;
+						LogA_LEDs_ClearAllFour();
+						LCD_WriteString(1, 0, " 7 6 5 4 3 2 1 0");
+						LCD_WriteString(2, 1, " x . . x . . . x");
+						LEDCurrentlyBlinking = LEDBlinking_Green_Quickly;
+						//todo ShowLiveStatusOnLCD(................);
+						delayMS(1000);
+					}
+					break;
+					case MenuStatus_Preselection_Down :
+					{
+						DeviceOperationMode = MenuStatus_Activity_Down;
+						LogA_LEDs_ClearAllFour();
+						LCD_WriteString(1, 0, "Now Sending OLS ");
+						LCD_WriteString(2, 1, "Data to Terminal");
+						LEDCurrentlyBlinking = LEDBlinking_Blue_Quickly;
+						//todo SendOLSDataToTerminal(................);
+						delayMS(1000);
+					}
+					break;
+					// Removes warnings if not all cases are handled
+					default:
+					break; // Do nothing
 				}
-    		    break;
+			}
+			break;
 			case LogA_Joystick_Position_Right	:
-				{
-					DeviceOperationMode = MenuStatus_Preselection_Right;
-					LogA_LEDs_ClearAllFour();
-					GPIO_SetBits(LEDRED);
-					LEDCurrentlyBlinking = LEDBlinking_Red_Slowly;
-					LCD_WriteString(1, 0, "Click to Confirm");
-					LCD_WriteString(2, 1, "Generator       ");
-				}
-				break;
+			{
+				DeviceOperationMode = MenuStatus_Preselection_Right;
+				LogA_LEDs_ClearAllFour();
+				GPIO_SetBits(LEDRED);
+				LEDCurrentlyBlinking = LEDBlinking_Red_Slowly;
+				LCD_WriteString(1, 0, "Click to Confirm");
+				LCD_WriteString(2, 1, "Generator       ");
+			}
+			break;
 			case LogA_Joystick_Position_Up :
-				{
-					DeviceOperationMode = MenuStatus_Preselection_Up;
-					LogA_LEDs_ClearAllFour();
-					GPIO_SetBits(LEDORANGE);
-					LEDCurrentlyBlinking = LEDBlinking_Orange_Slowly;
-					LCD_WriteString(1, 0, "Click to Confirm");
-					LCD_WriteString(2, 1, "Logic Logger    ");
-				}
-				break;
+			{
+				DeviceOperationMode = MenuStatus_Preselection_Up;
+				LogA_LEDs_ClearAllFour();
+				GPIO_SetBits(LEDORANGE);
+				LEDCurrentlyBlinking = LEDBlinking_Orange_Slowly;
+				LCD_WriteString(1, 0, "Click to Confirm");
+				LCD_WriteString(2, 1, "Logic Logger    ");
+			}
+			break;
 			case LogA_Joystick_Position_Left :
-				{
-					DeviceOperationMode = MenuStatus_Preselection_Left;
-					LogA_LEDs_ClearAllFour();
-					GPIO_SetBits(LEDGREEN);
-					LEDCurrentlyBlinking = LEDBlinking_Green_Slowly;
-					LCD_WriteString(1, 0, "Click to Confirm");
-					LCD_WriteString(2, 1, "Live Tracker    ");
-				}
-				break;
+			{
+				DeviceOperationMode = MenuStatus_Preselection_Left;
+				LogA_LEDs_ClearAllFour();
+				GPIO_SetBits(LEDGREEN);
+				LEDCurrentlyBlinking = LEDBlinking_Green_Slowly;
+				LCD_WriteString(1, 0, "Click to Confirm");
+				LCD_WriteString(2, 1, "Live Tracker    ");
+			}
+			break;
 			case LogA_Joystick_Position_Down :
-				{
-					DeviceOperationMode = MenuStatus_Preselection_Down;
-					LogA_LEDs_ClearAllFour();
-					GPIO_SetBits(LEDBLUE);
-					LEDCurrentlyBlinking = LEDBlinking_Blue_Slowly;
-					LCD_WriteString(1, 0, "Click to Confirm");
-					LCD_WriteString(2, 1, "OLS File Dump   ");
-				}
-				break;
+			{
+				DeviceOperationMode = MenuStatus_Preselection_Down;
+				LogA_LEDs_ClearAllFour();
+				GPIO_SetBits(LEDBLUE);
+				LEDCurrentlyBlinking = LEDBlinking_Blue_Slowly;
+				LCD_WriteString(1, 0, "Click to Confirm");
+				LCD_WriteString(2, 1, "OLS File Dump   ");
+			}
+			break;
 
 			// Covers Joystick_Position_None
 			default:
-				break; // Do nothing
+			{
+				if (DeviceOperationMode == MenuStatus_NoPreselectionOrActivity)
+				{
+					LEDCurrentlyBlinking = LEDBlinking_None;
+					LEDFlasherProRatio++;
+					if (LEDFlasherProRatio%16)
+					{
+						LogA_LEDs_ClearAllFour();
+					}
+					else
+					{
+						LogA_LEDs_LightAllFour();
+					}
+					LCD_WriteString(1, 0, "Move Joystick to");
+					LCD_WriteString(2, 1, "Select an Action");
+				}
+			}
+			break;
     	}
 
 
-    	GPIO_Write(GPIOC, PORTBITS_DIGOUT);
-    	delayMS(10);
-    	GPIO_Write(GPIOC, 0x0000);
-    	delayMS(10);
+//    	GPIO_Write(GPIOC, PORTBITS_DIGOUT);
+//    	delayMS(10);
+//    	GPIO_Write(GPIOC, 0x0000);
+//    	delayMS(10);
 
 
     	USART3_PutS("Hallo Urban! \r\n Und mein Akku war gerade leer!!! \r\n");

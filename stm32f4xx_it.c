@@ -140,6 +140,8 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+	DeadManDelay_Decrement();
+
 	if (!TimingDelay)
 	{
 		TimingDelay_Reload();

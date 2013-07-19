@@ -86,6 +86,19 @@ void TimingDelay_Decrement(void)
   }
 }
 
+/**
+  * @brief  Decrements the DeadManDelay variable.
+  * @param  None
+  * @retval None
+  */
+void DeadManDelay_Decrement(void)
+{
+  if (DeadManDelay != 0x00)
+  {
+    DeadManDelay--;
+  }
+}
+
 
 void TimingDelay_Reload(void)
 {
@@ -95,7 +108,7 @@ void TimingDelay_Reload(void)
 	}
 	else
 	{
-		TimingDelay = 10;	// Blinks quickls
+		TimingDelay = 10;	// Blinks quickly
 	}
 }
 

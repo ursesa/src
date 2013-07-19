@@ -25,6 +25,8 @@
 
 void DelayBasedOnSysTick(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
+void TimingDelay_Reload(void);
+void DeadManDelay_Decrement(void);
 void Timer2Config(void);
 void Timer2InterruptConfig(void);
 

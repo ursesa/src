@@ -37,6 +37,8 @@
 #define PORTBITS_DIGIN			0x39B4	// on GPIOB
 #define PORTBITS_DISPLAY_DATA	0x7F80  // on GPIOE
 
+#define DEADMAN_RELOAD			500		// delay upon no user action after which menu will go back to start
+
 
 //==================================================================================================
 // G L O B A L   T Y P E S
@@ -74,6 +76,8 @@ typedef enum
 	LEDBlinking_Orange_Quickly			= 0x20,
 	LEDBlinking_Green_Quickly			= 0x40,
 	LEDBlinking_Blue_Quickly			= 0x80,
+
+	LEDBlinking_ToggleAllFour			= 0xFF,
 }
 LEDBlinking_TE;
 
@@ -82,7 +86,8 @@ LEDBlinking_TE;
 // G L O B A L   V A R I A B L E S
 //==================================================================================================
 
-extern __IO uint32_t TimingDelay;
+extern __IO uint16_t TimingDelay;
+extern __IO uint16_t DeadManDelay;
 extern MenuStatus_TE DeviceOperationMode;
 extern LEDBlinking_TE LEDCurrentlyBlinking;
 

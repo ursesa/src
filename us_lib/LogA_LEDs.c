@@ -120,6 +120,14 @@ void LogA_ToggleActiveLED(void)
 				GPIO_ToggleBits(LEDBLUE);
 			}
 			break;
+		case LEDBlinking_ToggleAllFour :
+		{
+			GPIO_ToggleBits(LEDRED);
+			GPIO_ToggleBits(LEDORANGE);
+			GPIO_ToggleBits(LEDGREEN);
+			GPIO_ToggleBits(LEDBLUE);
+		}
+		break;
 		// Covers LEDBlinking_None
 		default:
 			{
