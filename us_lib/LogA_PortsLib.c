@@ -21,9 +21,7 @@
 #include "LogA_PortsLib.h"
 
 /**
-  * @brief  Configures DigOUT Channels on GPIOC.
-  * @param  todo
-  * @retval None
+  * @brief  Configures DigOUT channels on GPIOC.
   */
 void LogA_DigOUT_Init(void)
 {
@@ -38,9 +36,7 @@ void LogA_DigOUT_Init(void)
 }
 
 /**
-  * @brief  Configures DigIN Channels on GPIOB.
-  * @param  todo
-  * @retval None
+  * @brief  Configures DigIN channels on GPIOB.
   */
 void LogA_DigIN_Init(void)
 {
@@ -57,7 +53,10 @@ void LogA_DigIN_Init(void)
 
 
 /**
-  * @}
+  * @brief  Essential function that allows pick 8 individual bits out of a 16-bit port register
+  * @param  ExpandVal: is the wide value that needs to be compacted
+  * @param  Bitmask: 1s designate the positions where the information is stored
+  * @retval Unsigned 16bit integer with one byte sitting at the LSB end
   */ 
 uint16_t LogA_PortBits_Compactor(uint16_t ExpandVal, uint16_t Bitmask)
 {
@@ -79,7 +78,10 @@ uint16_t LogA_PortBits_Compactor(uint16_t ExpandVal, uint16_t Bitmask)
 }
 
 /**
-  * @}
+  * @brief  Essential function places one byte's bits into a 16bit wide register
+  * @param  CompactVal: is the narrow value that wants to be expanded
+  * @param  Bitmask: 1s designate the positions where the information has to be placed
+  * @retval Unsigned 16bit integer with one byte distributed over the whole width
   */ 
 uint16_t LogA_PortBits_Expander(uint16_t CompactVal, uint16_t Bitmask)
 {
@@ -101,17 +103,6 @@ uint16_t LogA_PortBits_Expander(uint16_t CompactVal, uint16_t Bitmask)
 }
 
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */   
-
-/**
-  * @}
-  */ 
     
 /*****END OF FILE****/
 
